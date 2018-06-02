@@ -14,6 +14,7 @@ import { ViewModel, ThumbnailListPageItem } from '../../shared/service/viewmodel
 import { IntentMessage } from '../../shared/pixstock/intent-message';
 import { IpcMessage } from '../../shared/pixstock/ipc-message';
 import { IpcUpdatePropResponse } from '../../shared/service/response/IpcUpdateProp.response';
+import { MessagingHelper } from '../../shared/service/messaging.helper';
 
 /**
  * サムネイル一覧画面コンポーネント
@@ -30,7 +31,7 @@ export class ThumbnailListPage extends ContentPageBase {
   /**
    *
    */
-  mCategoryId: Number = null;
+  mCategoryId: number | null = null;
 
   mRule: string = null;
 
@@ -47,7 +48,7 @@ export class ThumbnailListPage extends ContentPageBase {
    * リストの初期化時に読み込んだアイテム数を、
    * 遅延読み込み時の読み込み数とする。
    */
-  mAdjustLazyLoadNum: Number = 0;
+  mAdjustLazyLoadNum: number = 0;
 
 
   /**
@@ -171,16 +172,9 @@ export class ThumbnailListPage extends ContentPageBase {
   onClick_ContentItemContainer(item: Content, index: number): void {
     this._logger.info("[ThumbnailListPage][onClick_ItemContainer]", item);
 
-    // 画面遷移メッセージを送信する
-    //    PreviewPage画面を表示するためのメッセージ。
-    var intentMessage = new IntentMessage();
-    intentMessage.ServiceType = "Workflow";
-    intentMessage.MessageName = "TRNS_PreviewPage";
-    intentMessage.Parameter = index.toString();
-
-    var ipcMessage = new IpcMessage();
-    ipcMessage.Body = JSON.stringify(intentMessage);
-    this._pixstock.ipcRenderer.send("PIXS_INTENT_MESSAGE", ipcMessage);
+    // プレビュー画面遷移メッセージを送信する
+    // 遷移先の画面には、表示するコンテントのリスト内での位置を渡す。
+    MessagingHelper.TRNS_PreviewPage(this._pixstock, index);
   }
 
   /**
@@ -205,15 +199,7 @@ export class ThumbnailListPage extends ContentPageBase {
     this._logger.info("[ThumbnailListPage][onClick_CategoryContentItem]");
     this.toggleSelectedItem(item);
 
-    // データ読み込みメッセージを送信する
-    var intentMessage = new IntentMessage();
-    intentMessage.ServiceType = "Server";
-    intentMessage.MessageName = "GETCATEGORYCONTENT";
-    intentMessage.Parameter = item.Category.Id.toString();
-
-    var ipcMessage = new IpcMessage();
-    ipcMessage.Body = JSON.stringify(intentMessage);
-    this._pixstock.ipcRenderer.send("PIXS_INTENT_MESSAGE", ipcMessage);
+    MessagingHelper.GETCATEGORYCONTENT(this._pixstock, item.Category.Id);
   }
 
   /**
@@ -256,18 +242,7 @@ export class ThumbnailListPage extends ContentPageBase {
     if (this.vm.ThumbnailListPageItem != null)
       offsetSubCategory = this.vm.ThumbnailListPageItem.length;
 
-    var intentMessage = new IntentMessage();
-    intentMessage.ServiceType = "Server";
-    intentMessage.MessageName = "GETCATEGORY";
-    intentMessage.Parameter = JSON.stringify({
-      CategoryId: this.mCategoryId,
-      OffsetSubCategory: offsetSubCategory,
-      LimitOffsetSubCategory: 7,
-    });
-
-    var ipcMessage = new IpcMessage();
-    ipcMessage.Body = JSON.stringify(intentMessage);
-    this._pixstock.ipcRenderer.send("PIXS_INTENT_MESSAGE", ipcMessage);
+    MessagingHelper.GETCATEGORY(this._pixstock, this.mCategoryId, offsetSubCategory);
   }
 
   /**

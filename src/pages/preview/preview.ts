@@ -14,6 +14,7 @@ import { Label } from '../../shared/model/label';
 import { IntentMessage } from '../../shared/pixstock/intent-message';
 import { IpcMessage } from '../../shared/pixstock/ipc-message';
 import { ViewModel } from '../../shared/service/viewmodel';
+import { MessagingHelper } from '../../shared/service/messaging.helper';
 
 /**
  * プレビュー画面コンポーネント
@@ -132,14 +133,7 @@ export class PreviewPage extends ContentPageBase {
    * @param targetListPos 取得するコンテント情報の、ナビゲーションリスト内での項目位置
    */
   private requestUpdateContent(targetListPos: number) {
-    var intentMessage = new IntentMessage();
-    intentMessage.ServiceType = "Workflow";
-    intentMessage.MessageName = "ACT_DISPLAY_PREVIEWCURRENTLIST";
-    intentMessage.Parameter = targetListPos.toString();
-
-    var ipcMessage = new IpcMessage();
-    ipcMessage.Body = JSON.stringify(intentMessage);
-    this.messaging.ipcRenderer.send("PIXS_INTENT_MESSAGE", ipcMessage);
+    MessagingHelper.ACT_DISPLAY_PREVIEWCURRENTLIST(this.messaging, targetListPos);
   }
 
   /**
