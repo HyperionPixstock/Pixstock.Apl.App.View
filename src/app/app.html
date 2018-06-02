@@ -1,0 +1,52 @@
+<ion-menu [content]="content" side="left" id="menu_1">
+    <ion-header>
+        <ion-toolbar>
+            <ion-title>Left Menu</ion-title>
+        </ion-toolbar>
+    </ion-header>
+    <ion-content>
+        <ion-list>
+            <ion-item>
+                <ion-avatar item-start>
+                    <img src="https://avatars1.githubusercontent.com/u/9277875?s=150&v=4">
+                </ion-avatar>
+                <h2>atachimiko</h2>
+                <p>ワークスペースのパス文字列</p>
+            </ion-item>
+            <button ion-item (click)="openPage(homePage)">
+                Home
+            </button>
+            <button ion-item (click)="openPage(friendsPage)">
+                Friends
+            </button>
+            <button ion-item (click)="openPage(eventsPage)">
+                Events
+            </button>
+            <button ion-item (click)="closeMenu()">
+                Close Menu
+            </button>
+        </ion-list>
+    </ion-content>
+</ion-menu>
+<ion-menu [content]="content" side="left" id="menu_1b">
+    <ion-header>
+        <ion-toolbar>
+            <ion-title>Left Menu</ion-title>
+        </ion-toolbar>
+    </ion-header>
+    <ion-content>
+        aaa(menu_1b)
+    </ion-content>
+</ion-menu>
+<ion-menu [content]="content" side="right" id="menu_2">
+    <ion-header>
+        <ion-toolbar>
+            <ion-title>Right Menu</ion-title>
+        </ion-toolbar>
+    </ion-header>
+    <ion-content>
+        bbbb
+    </ion-content>
+</ion-menu>
+
+<ion-nav [root]="rootPage" main #content swipeBackEnabled="false"></ion-nav>

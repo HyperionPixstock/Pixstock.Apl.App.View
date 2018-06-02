@@ -1,0 +1,19 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>
+      ラベル一覧
+    </ion-title>
+    <ion-buttons end>
+      <button ion-button (click)="presentPopover($event)">
+        <ion-icon name="more"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-navbar>
+</ion-header>
+<ion-content padding>
+  <ion-list>
+    <button ion-item *ngFor="let item of mItems" (click)="onClick_ContentItemContainer(item)">
+      {{ item.Name }}
+    </button>
+  </ion-list>
+</ion-content>

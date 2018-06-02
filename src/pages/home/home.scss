@@ -1,0 +1,8 @@
+page-home {
+    /**
+     * home.html内のion-contentが生成するスクロール用領域の、スクロールバーを非表示にする
+     */
+     .scroll-content {
+        overflow: hidden;
+    }
+}

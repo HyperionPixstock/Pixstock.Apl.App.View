@@ -1,0 +1,40 @@
+page-thumbnail-list {
+    /**
+     * home.html内のion-contentが生成するスクロール用領域の、スクロールバーを非表示にする
+     */
+     .scroll-content {
+        overflow: hidden;
+    }
+
+    .image-container {
+        min-height: 200px;
+        background-size: contain;
+        background-position: top center;
+        background-repeat: no-repeat;
+    }
+
+    h2:first-child {
+        margin-top: 0!important;
+    }
+
+    .item-md {
+        h2 {
+            font-size: 1.2rem;
+        }
+
+        ion-thumbnail {
+            min-width: 50px;
+            min-height: 50px;
+
+            img {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    }
+
+    .selected {
+      background-color: rgba(51,153,255, 200);
+      color: white;
+    }
+}
