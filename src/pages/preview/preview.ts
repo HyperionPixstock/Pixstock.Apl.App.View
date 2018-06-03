@@ -72,7 +72,7 @@ export class PreviewPage extends ContentPageBase {
     this.logger.debug("[PreviewPage][ionViewDidEnter] NavParams.data", this.navParams.data);
 
     // データ読み込みメッセージを送信する
-    this.requestUpdateContent(this.navParams.data);
+    this.requestUpdateContent(this.navParams.data, true);
   }
 
   /**
@@ -102,7 +102,7 @@ export class PreviewPage extends ContentPageBase {
   onIonSlideChange() {
     this.logger.debug("[onIonSlideChange] IN");
     let currentIndex = this.slides.getActiveIndex();
-    this.requestUpdateContent(currentIndex);
+    this.requestUpdateContent(currentIndex, false);
     this.logger.debug("[onIonSlideChange] OUT");
   }
 
@@ -131,9 +131,10 @@ export class PreviewPage extends ContentPageBase {
    * プレビュー画面に表示しているコンテント情報を取得する
    *
    * @param targetListPos 取得するコンテント情報の、ナビゲーションリスト内での項目位置
+   * @param updateCategoryDisplayInfo
    */
-  private requestUpdateContent(targetListPos: number) {
-    MessagingHelper.ACT_DISPLAY_PREVIEWCURRENTLIST(this.messaging, targetListPos);
+  private requestUpdateContent(targetListPos: number, updateCategoryDisplayInfo: boolean) {
+    MessagingHelper.ACT_DISPLAY_PREVIEWCURRENTLIST(this.messaging, targetListPos, updateCategoryDisplayInfo);
   }
 
   /**

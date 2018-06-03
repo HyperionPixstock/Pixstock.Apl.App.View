@@ -11,14 +11,19 @@ export class MessagingHelper {
    *
    * @param messaging 送信コンテキスト
    * @param contentListPos コンテントリスト内の位置
+   * @param updateCategoryDisplayInfo 所属カテゴリの表示情報を更新するかどうかのフラグ
    */
-  static ACT_DISPLAY_PREVIEWCURRENTLIST(messaging: MessagingService, contentListPos: number) {
-    var intentMessage = new IntentMessage();
+  static ACT_DISPLAY_PREVIEWCURRENTLIST(messaging: MessagingService, contentListPos: number, updateCategoryDisplayInfo: boolean) {
+    let intentMessage = new IntentMessage();
     intentMessage.ServiceType = "Workflow";
     intentMessage.MessageName = "ACT_DISPLAY_PREVIEWCURRENTLIST";
-    intentMessage.Parameter = contentListPos.toString();
+    intentMessage.Parameter = JSON.stringify({
+      ContentListPos: contentListPos,
+      UpdateCategoryDisplayInfo: updateCategoryDisplayInfo,
+      UpdateLastDisplayContent: true // 表示継続機能
+    });
 
-    var ipcMessage = new IpcMessage();
+    let ipcMessage = new IpcMessage();
     ipcMessage.Body = JSON.stringify(intentMessage);
     messaging.ipcRenderer.send("PIXS_INTENT_MESSAGE", ipcMessage);
   }

@@ -6,13 +6,8 @@ import { ContentPageBase } from '../../shared/pages/ContentPageBase';
 import { Logger } from 'angular2-logger/core';
 import { MessagingService } from '../../shared/service/messaging.service';
 import { NavController, NavParams, PopoverController, List } from 'ionic-angular';
-import { PreviewPage } from '../preview/preview';
-import { ResultLoadCategory } from '../../shared/infra/load.category';
-import { ThumbnailListNavParam } from '../../shared/infra/navparam.thumbnail-list';
 import { LabelDao, ResultFindLabelLinkCategory } from '../../shared/dao/label.dao';
-import { ViewModel, ThumbnailListPageItem } from '../../shared/service/viewmodel';
-import { IntentMessage } from '../../shared/pixstock/intent-message';
-import { IpcMessage } from '../../shared/pixstock/ipc-message';
+import { ViewModel, ThumbnailListPageItem, ContentListPageItem } from '../../shared/service/viewmodel';
 import { IpcUpdatePropResponse } from '../../shared/service/response/IpcUpdateProp.response';
 import { MessagingHelper } from '../../shared/service/messaging.helper';
 
@@ -57,6 +52,11 @@ export class ThumbnailListPage extends ContentPageBase {
   mSubscribeUpdateProp: any;
 
   /**
+   * NotificationContentListPageItemイベントの購読オブジェクト
+   */
+  mSubscribeNotificationContentListPageItem: any;
+
+  /**
    * 最後にCategoryListプロパティを取得したときのカテゴリ一覧リストの項目数
    */
   mLastSubscribeUpdateProp_CategoryListNum: number = 0;
@@ -65,6 +65,17 @@ export class ThumbnailListPage extends ContentPageBase {
    * 現在の条件ですべてのカテゴリ情報を取得したと判断したか示すフラグ
    */
   mContinueLoadFlag: boolean = true;
+
+  /**
+   * コンテント一覧の読み込み完了時に、
+   * 前回表示していたコンテントのプレビュー画面を表示するかどうか示すフラグ
+   */
+  mShowContinueContentPreviewJustPropLoaded: boolean = false;
+
+  /**
+   * 前回表示していたコンテントのキー
+   */
+  mNextDisplayContentId: number | null = null;
 
   /**
    * コンストラクタ
@@ -117,15 +128,39 @@ export class ThumbnailListPage extends ContentPageBase {
         }
       }
     });
+
+    this.mSubscribeNotificationContentListPageItem = this.vm.NotificationContentListPageItem.subscribe((value: ContentListPageItem[]) => {
+      this._logger.debug("[ThumbnailListPage][NotificationContentListPageItem] subscribe");
+      if (!this.mShowContinueContentPreviewJustPropLoaded) return;
+
+      setTimeout(() => {
+        this._logger.debug("[ThumbnailListPage][NotificationContentListPageItem] mNextDisplayContentId=", this.mNextDisplayContentId);
+
+        // 前回表示していたコンテントの場所を、コンテント配列から検索する
+        let contentIndex: number = value.findIndex((element, index, array) => {
+          if (element.Content.Id == this.mNextDisplayContentId) return true;
+          return false;
+        });
+
+        if (contentIndex != -1) {
+          this._logger.debug("[ThumbnailListPage][NotificationContentListPageItem] コンテント一覧の途中から表示を開始します 表示要素位置=", contentIndex);
+          this.showPreviewPage(contentIndex);
+        }
+      }, 10);
+    });
+
+    this.vm.ThumbnailListPageItem = [];
+    this.vm.ContentListPageItem = [];
   }
 
   ngOnDestroy() {
     this.mSubscribeUpdateProp.unsubscribe();
+    this.mSubscribeNotificationContentListPageItem.unsubscribe();
   }
 
   ionViewDidLoad() {
     super.ionViewDidLoad();
-    this._logger.info("[ThumbnailListPage][ionViewDidLoad]", this.navParams.data);
+    this._logger.debug("[ThumbnailListPage][ionViewDidLoad]", this.navParams.data);
 
     this.mContinueLoadFlag = true;
     this.mCategoryId = 1;
@@ -134,14 +169,12 @@ export class ThumbnailListPage extends ContentPageBase {
 
   ionViewDidEnter() {
     super.ionViewDidEnter();
-    this._logger.info("[ThumbnailListPage][ionViewDidEnter]", this.navParams.data);
   }
 
   /**
    * @inheritDoc
    */
   OnWindowResize() {
-
   }
 
   /**
@@ -164,26 +197,23 @@ export class ThumbnailListPage extends ContentPageBase {
   }
 
   /**
-   * コンテントリストコントロール内でのアイテムクリックイベントのハンドラ
+   * コンテント一覧リスト内でのアイテムクリックイベントのハンドラ
    *
    * @param item クリックされたアイテム(Itemsプロパティ内の要素)
    * @param index クリックされたアイテムの、リスト内の位置。
    */
   onClick_ContentItemContainer(item: Content, index: number): void {
-    this._logger.info("[ThumbnailListPage][onClick_ItemContainer]", item);
-
-    // プレビュー画面遷移メッセージを送信する
-    // 遷移先の画面には、表示するコンテントのリスト内での位置を渡す。
-    MessagingHelper.TRNS_PreviewPage(this._pixstock, index);
+    this._logger.debug("[ThumbnailListPage][onClick_ContentItemContainer]", item);
+    this.showPreviewPage(index);
   }
 
   /**
-   * カテゴリリストコントロール内でのアイテムクリックイベントのハンドラ
+   * カテゴリ一覧リスト内でのアイテムクリックイベントのハンドラ
    *
    * @param item 子階層のカテゴリ一覧リストを表示したいカテゴリ情報(親カテゴリ)
    */
   onClick_CategoryItemContainer(item: Category): void {
-    this._logger.info("[ThumbnailListPage][onClick_CategoryItemContainer]", item);
+    this._logger.debug("[ThumbnailListPage][onClick_CategoryItemContainer]", item);
     this.vm.ThumbnailListPageItem = [];
     this.mContinueLoadFlag = true;
     this.mCategoryId = item.Id;
@@ -196,9 +226,28 @@ export class ThumbnailListPage extends ContentPageBase {
    * @param item 選択したカテゴリ情報
    */
   onClick_CategoryContentItem(item: ThumbnailListPageItem): void {
-    this._logger.info("[ThumbnailListPage][onClick_CategoryContentItem]");
+    this._logger.debug("[ThumbnailListPage][onClick_CategoryContentItem]");
     this.toggleSelectedItem(item);
 
+    this.mShowContinueContentPreviewJustPropLoaded = false;
+    MessagingHelper.GETCATEGORYCONTENT(this._pixstock, item.Category.Id);
+  }
+
+  /**
+   * 続きからコンテントをプレビュー画面で表示する
+   *
+   * @param item 続きから表示するカテゴリ一覧リスト内の項目
+   */
+  onClick_CategoryContentItemContinue(item: ThumbnailListPageItem): void {
+    // GETCATEGORYCONTENTを実行し、カテゴリのコンテント一覧をBFFから取得する
+    // 取得後、ThumbnailListPageItem.Category.NextDisplayContentIdに一致するコンテントをプレビュー画面で表示する。
+
+    this._logger.debug("[ThumbnailListPage][onClick_CategoryContentItemContinue] NextDisplayContentId=", item.Category.NextDisplayContentId);
+    this.toggleSelectedItem(item);
+
+    this.mNextDisplayContentId = item.Category.NextDisplayContentId;
+
+    this.mShowContinueContentPreviewJustPropLoaded = true;
     MessagingHelper.GETCATEGORYCONTENT(this._pixstock, item.Category.Id);
   }
 
@@ -213,6 +262,16 @@ export class ThumbnailListPage extends ContentPageBase {
       if (prop != item) prop.Selected = false;
       else prop.Selected = true;
     });
+  }
+
+  /**
+   * プレビュー画面遷移メッセージを送信する
+   *
+   * @param contentIndex 表示するコンテント情報のコンテント配列内での位置
+   */
+  private showPreviewPage(contentIndex: number) {
+    // 遷移先の画面には、表示するコンテントのリスト内での位置を渡す。
+    MessagingHelper.TRNS_PreviewPage(this._pixstock, contentIndex);
   }
 
   /**

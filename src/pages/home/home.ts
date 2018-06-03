@@ -83,7 +83,7 @@ export class HomePage extends ContentPageBase {
     var intentMessage = new IntentMessage();
     intentMessage.ServiceType = "Workflow";
     intentMessage.MessageName = "TRNS_TOPSCREEN";
-    intentMessage.Parameter = "Parameterです";
+    intentMessage.Parameter = "";
 
     var ipcMessage = new IpcMessage();
     ipcMessage.Body = JSON.stringify(intentMessage);
@@ -95,7 +95,7 @@ export class HomePage extends ContentPageBase {
     var intentMessage = new IntentMessage();
     intentMessage.ServiceType = "Workflow";
     intentMessage.MessageName = "TRNS_ThumbnailListPage";
-    intentMessage.Parameter = "Parameterです";
+    intentMessage.Parameter = "";
 
     var ipcMessage = new IpcMessage();
     ipcMessage.Body = JSON.stringify(intentMessage);
@@ -107,7 +107,7 @@ export class HomePage extends ContentPageBase {
     var intentMessage = new IntentMessage();
     intentMessage.ServiceType = "Workflow";
     intentMessage.MessageName = "TRNS_BACK";
-    intentMessage.Parameter = "Parameterです";
+    intentMessage.Parameter = "";
 
     var ipcMessage = new IpcMessage();
     ipcMessage.Body = JSON.stringify(intentMessage);

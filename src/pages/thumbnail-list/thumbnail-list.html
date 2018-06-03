@@ -23,6 +23,7 @@
             </ion-thumbnail>
             <h2 text-wrap>{{item.Category.Name}}</h2>
             <button ion-button item-end (click)="onClick_CategoryContentItem(item)" *ngIf="item.IsContent">表示</button>
+            <button ion-button item-end (click)="onClick_CategoryContentItemContinue(item)" *ngIf="item.IsContent && item.Category?.NextDisplayContentId != null">続きを表示</button>
             <button ion-button clear item-end (click)="onClick_CategoryItemContainer(item.Category)" *ngIf="item.IsSubCaetgory">
               <ion-icon name="folder-open"></ion-icon>
             </button>
