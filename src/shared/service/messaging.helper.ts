@@ -29,6 +29,22 @@ export class MessagingHelper {
   }
 
   /**
+   * 親階層カテゴリのサブカテゴリ一覧表示
+   *
+   * @param messaging 送信コンテキスト
+   */
+  static ACT_UpperCategoryList(messaging: MessagingService) {
+    let intentMessage = new IntentMessage();
+    intentMessage.ServiceType = "Workflow";
+    intentMessage.MessageName = "ACT_UpperCategoryList";
+    intentMessage.Parameter = "";
+
+    let ipcMessage = new IpcMessage();
+    ipcMessage.Body = JSON.stringify(intentMessage);
+    messaging.ipcRenderer.send("PIXS_INTENT_MESSAGE", ipcMessage);
+  }
+
+  /**
    * GETCATEGORYメッセージを送信する
    *
    * @param messaging 送信コンテキスト

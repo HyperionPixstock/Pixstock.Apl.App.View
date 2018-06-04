@@ -207,6 +207,8 @@ export class ThumbnailListPage extends ContentPageBase {
     this.showPreviewPage(index);
   }
 
+  mBeforeCategortId: number;
+
   /**
    * カテゴリ一覧リスト内でのアイテムクリックイベントのハンドラ
    *
@@ -214,6 +216,15 @@ export class ThumbnailListPage extends ContentPageBase {
    */
   onClick_CategoryItemContainer(item: Category): void {
     this._logger.debug("[ThumbnailListPage][onClick_CategoryItemContainer]", item);
+
+    // 暫定処理: 上階層に移動する
+    if (item.Id == -1) {
+      this.vm.ThumbnailListPageItem = [];
+      this.mContinueLoadFlag = true;
+      this.requestUpperCategory();
+      return;
+    }
+
     this.vm.ThumbnailListPageItem = [];
     this.mContinueLoadFlag = true;
     this.mCategoryId = item.Id;
@@ -301,7 +312,28 @@ export class ThumbnailListPage extends ContentPageBase {
     if (this.vm.ThumbnailListPageItem != null)
       offsetSubCategory = this.vm.ThumbnailListPageItem.length;
 
+    if (this.mCategoryId != 1) {
+      let category: Category = {
+        Id: -1,
+        Name: "上へ",
+        NextDisplayContentId: null,
+        HasLinkSubCategoryFlag: false,
+        Labels: []
+      };
+      let item: ThumbnailListPageItem = {
+        Selected: false,
+        Category: category,
+        IsContent: false,
+        IsSubCaetgory: true
+      };
+      this.vm.ThumbnailListPageItem.push(item);
+    }
+
     MessagingHelper.GETCATEGORY(this._pixstock, this.mCategoryId, offsetSubCategory);
+  }
+
+  private requestUpperCategory() {
+    MessagingHelper.ACT_UpperCategoryList(this._pixstock);
   }
 
   /**
